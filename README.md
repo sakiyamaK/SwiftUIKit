@@ -8,12 +8,16 @@
 UIKitとSwiftUIを簡単に連携するライブラリ
 
 
+# Sample
+
+## UIKit Integration in SwiftUI
+
 ```swift
 import SwiftUI
 import UIKit
 import SwiftUIKit
 
-struct ContentView: View {
+struct UseUIKitInSwiftUIView: View {
     var body: some View {
 
         let label1 = UILabel(frame: .zero)
@@ -33,45 +37,58 @@ struct ContentView: View {
 
         return VStack(spacing: 100) {
 
-            // pattern 1
-            VStack {
-                label1.view()
-                button1.view()
-            }
-
-            // pattern 2
-            VStack {
-                UIKitView {
-                    label2
+                // pattern 1
+                VStack {
+                    /***
+                     UIKit Component
+                     **/
+                    label1.view()
+                    button1.view()
                 }
-                .fixedSize()
 
-                UIKitView {
-                    button2
+                // pattern 2
+                VStack {
+                    /***
+                     UIKit Component
+                     **/
+                    UIKitView {
+                        label2
+                    }
+                    .fixedSize()
+
+                    /***
+                     UIKit Component
+                     **/
+                    UIKitView {
+                        button2
+                    }
+                    .fixedSize()
                 }
-                .fixedSize()
-            }
 
-            /*
-             *** layout crash ***
-             *** Do NOT use UIStackView ***
-            UIKitView {
-                let stackView = UIStackView(arrangedSubviews: [label2, button2])
-                stackView.axis = .vertical
-                stackView.alignment = .center
-                return stackView
-            }
-             */
+                /*
+                 *** layout crash ***
+                 *** Do NOT use UIStackView ***
+                UIKitView {
+                    let stackView = UIStackView(arrangedSubviews: [label2, button2])
+                    stackView.axis = .vertical
+                    stackView.alignment = .center
+                    return stackView
+                }
+                 */
 
-            VStack {
-                Text("Text Hello, world!")
-                Button("Button Hello, world!") {}
-            }
-        }
+                VStack {
+                    Text("Text Hello, world!")
+                    Button("Button Hello, world!") {}
+                }
+        }.navigationTitle("SwiftUI")
     }
 }
 
 ```
+
+<img width="259" alt="Image" src="https://github.com/user-attachments/assets/0fafbb42-5ceb-4071-90de-4653789f6ed1" />
+
+## SwiftUI Integration in UIKit
 
 ```swift
 
@@ -79,50 +96,52 @@ import UIKit
 import SwiftUI
 import SwiftUIKit
 
-extension UIStackView {
-    @discardableResult
-    func addArrangedSubviews(_ views: [UIView]) -> Self {
-        views.forEach { addArrangedSubview($0) }
-        return self
-    }
-}
+final class UseSwiftUIInViewController: UIViewController {
 
-final class ViewController: UIViewController {
+    private lazy var stackView = createStackView(spacing: 100)
+    private lazy var label: UILabel = {
+        let label = UILabel(frame: .zero)
+        label.textAlignment = .center
+        label.text = "UILabel Hello, world!"
+        return label
+    }()
+    private lazy var button: UIButton = {
+        var config = UIButton.Configuration.plain()
+        config.title = "UIButton Hello, world!"
+        let button = UIButton(configuration: config)
+        return button
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let stackView = createStackView(spacing: 20)
+        title = "UIViewController"
+        navigationController?.navigationBar.prefersLargeTitles = true
 
         view.addSubview(stackView)
-        NSLayoutConstraint.activate([
-            stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        ])
-
-
-        let label = UILabel(frame: .zero)
-        label.textAlignment = .center
-        label.text = "UILabel Hello, world!"
-
-        var config = UIButton.Configuration.plain()
-        config.title = "UIButton Hello, world!"
-        let button = UIButton(configuration: config)
+        setupConstraint()
 
         stackView.addArrangedSubviews([
             createStackView().addArrangedSubviews([
                 label,
                 button,
             ]),
+
             // pattern 1
             createStackView().addArrangedSubviews([
+                /***
+                SwiftUI Component
+                 ***/
                 Text("Text Hello, world!").uiView(),
                 Button("Button Hello, world!") {}.uiView()
 
             ]),
+
             // pattern 2
             SwiftUIView {
+                /***
+                SwiftUI Component
+                 ***/
                 VStack {
                     Text("Text Hello, world!")
                     Button("Button Hello, world!") {}
@@ -130,8 +149,18 @@ final class ViewController: UIViewController {
             }
         ])
     }
+}
 
-    private func createStackView(spacing: CGFloat = 0) -> UIStackView {
+private extension UseSwiftUIInViewController {
+    func setupConstraint() {
+        NSLayoutConstraint.activate([
+            stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+    }
+
+    func createStackView(spacing: CGFloat = 0) -> UIStackView {
         let stackView = UIStackView(arrangedSubviews: [])
         stackView.alignment = .center
         stackView.axis = .vertical
@@ -139,8 +168,18 @@ final class ViewController: UIViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }
+
+}
+extension UIStackView {
+    @discardableResult
+    func addArrangedSubviews(_ views: [UIView]) -> Self {
+        views.forEach { addArrangedSubview($0) }
+        return self
+    }
 }
 ```
+
+<img width="259" alt="Image" src="https://github.com/user-attachments/assets/016e5f0c-6705-41d0-b974-64c71cea3dc3" />
 
 ## Installation
 

@@ -14,11 +14,11 @@ struct RootView: View {
         NavigationStack {
             List {
                 NavigationLink("Go to SwiftUI") {
-                    ContentView()
+                    UseUIKitInSwiftUIView()
                 }
                 NavigationLink("Go to UIKit") {
                     UIKitView {
-                        ViewController().view!
+                        UseSwiftUIInViewController().view!
                     }
                 }
             }
